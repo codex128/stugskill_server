@@ -1,11 +1,5 @@
 console.log("hello from server javascript!");
 
-const rateLimit = require('express-rate-limit');
-app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,  // 15 minutes
-    max: 100                   // maximum 100 requests
-}));
-
 const http = require('http');
 
 const server = http.createServer((req, res) => {

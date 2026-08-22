@@ -81,7 +81,7 @@ function updatePlayerRatings(data) {
         return;
     }
     var teamRatings = [[], []];
-    for (var i = 0; i < data.players.length) {
+    for (var i = 0; i < data.players.length; i++) {
         const pdata = data.players[i];
         if (!pdata.isBot) {
             var currentRating = playerRatings[pdata.name];

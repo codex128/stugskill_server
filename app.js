@@ -22,19 +22,26 @@ const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
 (async function() {
     let release;
     try {
-        release = lockfile.lock(playerDataFile);
+        release = await lockfile.lock(playerDataFile);
         const data = (await fs.readFile(playerDataFile, "utf8")).split("\n");
+        var records = 0;
         for (var i = 0; i < data.length; i++) {
             var player = data[i].split(",");
-            playerRatings[player[0]] = rating({mu: player[1], sigma: player[2]});
+            if (player.length >= 3) {
+                playerRatings[player[0]] = rating({mu: player[1], sigma: player[2]});
+                records++;
+            }
         }
         ratingsRead = true;
-        console.log("Player data successfully read from file: " + data.length + " records.");
+        console.log("Player data successfully read from file: " + records + " records.");
     } catch (e) {
         console.error("Fatal: error while reading from player data. Copying to backup to avoid data being lost.", e);
         await fs.copyFile(playerDataFile, "/home/codex/projects/stugskill_server/player_backup_" + Date.now() + ".csv");
     } finally {
-        if (typeof release === "function") await release();
+        if (typeof release === "function") {
+            await release();
+            console.log("Player file released.");
+        }
     }
 })();
 
@@ -45,19 +52,23 @@ setInterval(async () => {
             return;
         }
         var output = "";
+        var records = 0;
         for (var name in playerRatings) {
             const data = playerRatings[name];
             output += name + "," + data.mu + "," + data.sigma + "\n";
+            records++;
         }
-        release = lockfile.lock(playerDataFile);
+        release = await lockfile.lock(playerDataFile);
         await fs.writeFile(playerDataFile, output, "utf8");
-        await release();
         ratingsUpdated = false;
-        console.log("Player updates successfully written to file.");
+        console.log("Player updates successfully written to file: " + records + " records.");
     } catch (e) {
-        console.error("Failed to write player updates to file.");
+        console.error("Failed to write player updates to file: ", e);
     } finally {
-        if (typeof release === "function") await release();
+        if (typeof release === "function") {
+            await release();
+            console.log("Player file released.");
+        }
     }
 }, 1000 * 60 * 60); // every hour
 
@@ -104,11 +115,7 @@ function updatePlayerRatings(data) {
     ratingsUpdated = true;
 }
 
-const server = http.createServer((req, res) => {
-    console.log("http server started");
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ message: 'Hello from JavaScript!' }));
-});
+const server = http.createServer((req, res) => {});
 const wss = new WebSocketServer({ noServer: true });
 
 server.on("upgrade", (request, socket, head) => {

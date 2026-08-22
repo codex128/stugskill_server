@@ -14,35 +14,43 @@ const supportedGameModes = {
 };
 
 var activeGameData = {};
-var playerRatings = {};
+var playerRatings = {
+    conquest: {},
+    battle: {},
+};
 var ratingsUpdated = false;
 var ratingsRead = false;
 const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
-const cleaningInterval = 1000 * 60 * 5;   // hour
+const cleaningInterval = 1000 * 60 * 15;   // 15 minutes
 const staleGameThreshold = 1000 * 60 * 15; // 15 minutes
 
 (async function() {
     let release;
     try {
         release = await lockfile.lock(playerDataFile);
+        const now = Date.now();
         const data = (await fs.readFile(playerDataFile, "utf8")).split("\n");
         var records = 0;
         for (var i = 0; i < data.length; i++) {
             var player = data[i].split(",");
-            if (player.length >= 3) {
-                playerRatings[player[0]] = rating({mu: parseFloat(player[1]), sigma: parseFloat(player[2])});
-                records++;
+            if (player.length >= 4) {
+                var mode = playerRatings[player[0]];
+                if (mode) {
+                    mode[player[1]] = rating({mu: parseFloat(player[2]), sigma: parseFloat(player[3])});
+                    records++;
+                } else {
+                    console.warn("Player data references unsupported game mode: " + data[i]);
+                }
             }
         }
         ratingsRead = true;
-        console.log("Player data successfully read from file: " + records + " records.");
+        console.log("Player data successfully read from file: " + records + " records in " + (Date.now() - now) + "ms.");
     } catch (e) {
         console.error("Fatal: error while reading from player data. Copying to backup to avoid data being lost.", e);
         await fs.copyFile(playerDataFile, "/home/codex/projects/stugskill_server/player_backup_" + Date.now() + ".csv");
     } finally {
         if (typeof release === "function") {
             await release();
-            console.log("Player file released.");
         }
     }
 })();
@@ -55,21 +63,23 @@ setInterval(async () => {
         }
         var output = "";
         var records = 0;
-        for (var name in playerRatings) {
-            const data = playerRatings[name];
-            output += name + "," + data.mu + "," + data.sigma + "\n";
-            records++;
+        const now = Date.now();
+        for (var mode in playerRatings) {
+            for (var name in playerRatings[mode]) {
+                const data = playerRatings[mode][name];
+                output += mode + "," + name + "," + data.mu + "," + data.sigma + "\n";
+                records++;
+            }
         }
         release = await lockfile.lock(playerDataFile);
         await fs.writeFile(playerDataFile, output, "utf8");
         ratingsUpdated = false;
-        console.log("Player updates successfully written to file: " + records + " records.");
+        console.log("Player updates successfully written to file: " + records + " records in " + (Date.now() - now) + "ms.");
     } catch (e) {
         console.error("Failed to write player updates to file: ", e);
     } finally {
         if (typeof release === "function") {
             await release();
-            console.log("Player file released.");
         }
     }
     try {
@@ -84,8 +94,13 @@ setInterval(async () => {
     }
 }, cleaningInterval);
 
+function computeInitialRating(xp) {
+    const rank = 0.035 * Math.sqrt(xp);
+    return {mu: 25 + rank * (42 / 400), sigma: 8.3333 - rank * (5.3333 / 400)};
+}
+
 function updatePlayerRatings(data) {
-    if (!supportedGameModes[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
+    if (!playerRatings[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
         return;
     }
     var game = activeGameData[data.shareLinkToken];
@@ -93,8 +108,7 @@ function updatePlayerRatings(data) {
         activeGameData[data.shareLinkToken] = {
             lastUpdate: Date.now(),
             scores: [data.teams[0].score, data.teams[1].score]
-        };
-        console.log("rejected: game not initialized");
+        }
         return;
     }
     const deltaScores = [data.teams[0].score - game.scores[0], data.teams[1].score - game.scores[1]];
@@ -102,25 +116,24 @@ function updatePlayerRatings(data) {
     game.scores[1] = data.teams[1].score;
     game.lastUpdate = Date.now();
     if (deltaScores[0] <= 0 && deltaScores[1] <= 0) {
-        console.log("rejected: non-positive team scores");
         return;
     }
     var teamRatings = [[], []];
     for (var i = 0; i < data.players.length; i++) {
         const pdata = data.players[i];
-        if (!pdata.isBot) {
-            var currentRating = playerRatings[pdata.name];
+        if (pdata.team && !pdata.isBot) {
+            var currentRating = playerRatings[pdata.gamemode][pdata.name];
             if (!currentRating) {
-                currentRating = playerRatings[pdata.name] = rating({mu: 25.0, sigma: 8.333333});
+                currentRating = playerRatings[pdata.gamemode][pdata.name] = computeInitialRating(pdata.xp);
             }
             teamRatings[pdata.team].push(currentRating);
         }
     }
     if (teamRatings[0].length === 0 || teamRatings[1].length === 0) {
-        console.log("rejected: team has zero real players.");
         return;
     }
-    const updatedScores = rate(teamRatings, {score: deltaScores});
+    // tau ensures players don't get locked down into a rating
+    const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.1});
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
             teamRatings[i][j].mu = updatedScores[i][j].mu;
@@ -131,7 +144,27 @@ function updatePlayerRatings(data) {
     ratingsUpdated = true;
 }
 
-const server = http.createServer((req, res) => {});
+const server = http.createServer((req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    if (req.method === "GET" && url.pathname === "/api/players") {
+        const searchTerms = url.searchParams.get("search").split(",");
+        const mode = playerRatings[searchTerms[0]];
+        var results = [];
+        for (var name in mode) {
+            if (name.includes(searchTerms[1])) {
+                results.push({name: name, os: Math.floor(mode[name].mu)});
+            }
+        }
+        results.sort((a, b) => b.os - a.os);
+        const limit = parseInt(searchTerms[2]);
+        if (limit > 0) {
+            results = results.slice(0, limit);
+        }
+        res.writeHead(200);
+        res.end(JSON.stringify({players: results}));
+    }
+});
 const wss = new WebSocketServer({ noServer: true });
 
 server.on("upgrade", (request, socket, head) => {

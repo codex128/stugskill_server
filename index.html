@@ -1,10 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Stug Skill</title>
-</head>
-<body>
-    <h1>Stug Skill Leaderboard</h1>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Stug Skill</title>
+    </head>
+    <body>
+        <h1>Stug Leaderboard</h1>
+        <select id="mode-filter">
+            <option value="conquest">Conquest</option>
+            <option value="battle">Battle</option>
+        </select>
+        <input type="text" value="" placeholder="filter by name">
+        <select id="max-players">
+            <option value="50">Top 50</option>
+            <option value="100">Top 100</option>
+            <option value="500">Top 500</option>
+            <option value="0">All</option>
+        </select>
+        <button id="fetch-players">Fetch</button>
+        <table id="player-table"></table>
+        <script src="index.js" type="text/javascript"></script>
+    </body>
 </html>

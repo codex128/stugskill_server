@@ -1,0 +1,29 @@
+
+function createTableRow() {
+    const row = document.createElement("tr");
+    for (var i = 0; i < arguments.length; i++) {
+        const cell = document.createElement("th");
+        cell.textContent = arguments[i];
+        row.appendChild(cell);
+    }
+    return row;
+}
+
+function fetchPlayerData() {
+    const mode = document.getElementById("mode-filter").value;
+    const name = document.getElementById("name-filter").value;
+    const limit = document.getElementById("max-players").value;
+    const search = mode + "," + name + "," + limit;
+    const table = document.getElementById("player-table");
+    table.replaceChildren();
+    fetch(`https://stugskill.online/api/players?search=${encodeURIComponent(search)}`).then(res => res.json()).then(data => {
+        table.appendChild(createTableRow("", "Player", "OS"));
+        for (var i = 0; i < data.players.length; i++) {
+            table.appendChild(createTableRow(i + 1, data.players[i].name, data.players[i].os));
+        }
+    });
+}
+
+document.getElementById("fetch-players").onclick = fetchPlayerData;
+fetchPlayerData();
+

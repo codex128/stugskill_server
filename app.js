@@ -30,7 +30,7 @@ const staleGameThreshold = 1000 * 60 * 15; // 15 minutes
         for (var i = 0; i < data.length; i++) {
             var player = data[i].split(",");
             if (player.length >= 3) {
-                playerRatings[player[0]] = rating({mu: player[1], sigma: player[2]});
+                playerRatings[player[0]] = rating({mu: parseFloat(player[1]), sigma: parseFloat(player[2])});
                 records++;
             }
         }

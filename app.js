@@ -100,8 +100,6 @@ function computeInitialRating(xp) {
 }
 
 function updatePlayerRatings(data) {
-    console.log("update players...");
-    console.log(data);
     if (!playerRatings[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
         return;
     }
@@ -118,19 +116,15 @@ function updatePlayerRatings(data) {
     game.scores[1] = data.teams[1].score;
     game.lastUpdate = Date.now();
     if (deltaScores[0] <= 0 && deltaScores[1] <= 0) {
-        console.log("invalid scores...");
         return;
     }
     var teamRatings = [[], []];
     for (var i = 0; i < data.players.length; i++) {
         const pdata = data.players[i];
         if (pdata.team && !pdata.isBot) {
-            console.log(playerRatings[pdata.gamemode]);
-            console.log(pdata.name);
-            console.log(pdata.gamemode);
-            var currentRating = playerRatings[pdata.gamemode][pdata.name];
+            var currentRating = playerRatings[data.gamemode][pdata.name];
             if (!currentRating) {
-                currentRating = playerRatings[pdata.gamemode][pdata.name] = computeInitialRating(pdata.xp);
+                currentRating = playerRatings[data.gamemode][pdata.name] = computeInitialRating(pdata.xp);
             }
             teamRatings[pdata.team].push(currentRating);
         }

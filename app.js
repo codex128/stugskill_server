@@ -137,6 +137,9 @@ wss.on("connection", (ws, request) => {
             console.error("Failed to compute player ratings: ", e);
         }
     });
+    ws.on("close", (code, reason) => {
+        console.log(`WebSocket disconnected (code: ${code}, reason: ${reason.toString() || "unknown"})`)
+    });
 });
 
 server.listen(3000, () => {

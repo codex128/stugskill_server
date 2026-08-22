@@ -68,7 +68,7 @@ function updatePlayerRatings(data) {
     var game = activeGameData[data.gameId];
     if (!game) {
         activeGameData[data.gameId] = {
-            scores: [data.teams[0].score, data.teams[1].score];
+            scores: [data.teams[0].score, data.teams[1].score]
         };
         return;
     } else if (game.scores[0] >= data.teams[0].score && game.scores[1] >= data.teams[1].score) {

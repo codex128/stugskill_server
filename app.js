@@ -120,7 +120,9 @@ function updatePlayerRatings(data) {
         console.log("rejected: team has zero real players.");
         return;
     }
+    console.log(teamRatings);
     const updatedScores = rate(teamRatings, {score: deltaScores});
+    console.log(updatedScores);
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
             teamRatings[i][j].mu = updatedScores[i][j].mu;
@@ -148,7 +150,6 @@ wss.on("connection", (ws, request) => {
     console.log("WebSocket connection established.");
     ws.on("message", (message) => {
         try {
-            console.log("received websocket message");
             updatePlayerRatings(JSON.parse(message));
         } catch (e) {
             console.error("Failed to compute player ratings: ", e);

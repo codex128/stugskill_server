@@ -73,21 +73,25 @@ setInterval(async () => {
 }, 1000 * 60 * 60); // every hour
 
 function updatePlayerRatings(data) {
-    if (!supportedGamesModes[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
+    if (!supportedGameModes[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
         return;
     }
     var game = activeGameData[data.gameId];
     if (!game) {
         activeGameData[data.gameId] = {
+            lastUpdate: Date.now(),
             scores: [data.teams[0].score, data.teams[1].score]
         };
+        console.log("rejected: game not initialized");
         return;
     } else if (game.scores[0] >= data.teams[0].score && game.scores[1] >= data.teams[1].score) {
+        console.log("");
         return;
     }
     const deltaScores = [data.teams[0].score - game.scores[0], data.teams[1].score - game.scores[1]];
     game.scores[0] = data.teams[0].score;
     game.scores[1] = data.teams[1].score;
+    game.lastUpdate = Date.now();
     if (deltaScores[0] <= 0 && deltaScores[1] <= 0) {
         return;
     }
@@ -132,7 +136,7 @@ wss.on("connection", (ws, request) => {
     console.log("WebSocket connection established.");
     ws.on("message", (message) => {
         try {
-            updatePlayerRatings(JSON.parse(message));
+            //updatePlayerRatings(JSON.parse(message));
         } catch (e) {
             console.error("Failed to compute player ratings: ", e);
         }

@@ -101,6 +101,7 @@ function computeInitialRating(xp) {
 
 function updatePlayerRatings(data) {
     if (!playerRatings[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
+        console.log("rejecting: unsupported game mode or lacking players.");
         return;
     }
     var game = activeGameData[data.shareLinkToken];
@@ -109,6 +110,7 @@ function updatePlayerRatings(data) {
             lastUpdate: Date.now(),
             scores: [data.teams[0].score, data.teams[1].score]
         }
+        console.log("rejecting: must initialize game.");
         return;
     }
     const deltaScores = [data.teams[0].score - game.scores[0], data.teams[1].score - game.scores[1]];
@@ -116,6 +118,7 @@ function updatePlayerRatings(data) {
     game.scores[1] = data.teams[1].score;
     game.lastUpdate = Date.now();
     if (deltaScores[0] <= 0 && deltaScores[1] <= 0) {
+        console.log("rejecting: no positive score difference");
         return;
     }
     var teamRatings = [[], []];
@@ -130,6 +133,7 @@ function updatePlayerRatings(data) {
         }
     }
     if (teamRatings[0].length === 0 || teamRatings[1].length === 0) {
+        console.log("rejecting: lacking real players.");
         return;
     }
     // tau ensures players don't get locked down into a rating

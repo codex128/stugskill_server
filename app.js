@@ -81,7 +81,7 @@ function updatePlayerRatings(data) {
         return;
     }
     var teamRatings = [[], []];
-    for (int i = 0; i < data.players.length) {
+    for (var i = 0; i < data.players.length) {
         const pdata = data.players[i];
         if (!pdata.isBot) {
             var currentRating = playerRatings[pdata.name];
@@ -95,8 +95,8 @@ function updatePlayerRatings(data) {
         return;
     }
     const updatedScores = rate(teamRatings, {score: deltaScores});
-    for (int i = 0; i < teamRatings.length; i++) {
-        for (int j = 0; j < teamRatings[i].length; j++) {
+    for (var i = 0; i < teamRatings.length; i++) {
+        for (var j = 0; j < teamRatings[i].length; j++) {
             teamRatings[i][j] = updatedScores[i][j];
         }
     }

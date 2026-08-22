@@ -101,6 +101,7 @@ function computeInitialRating(xp) {
 
 function updatePlayerRatings(data) {
     console.log("update players...");
+    console.log(data);
     if (!playerRatings[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
         return;
     }

@@ -125,8 +125,7 @@ function updatePlayerRatings(data) {
     var playerCount = 0;
     for (var i = 0; i < data.players.length; i++) {
         const pdata = data.players[i];
-        if (pdata.team && !pdata.isBot) {
-            console.log(pdata.name + ", " + pdata.team);
+        if (pdata.team !== null && !pdata.isBot) {
             playerCount++;
             var currentRating = playerRatings[data.gamemode][pdata.name];
             if (!currentRating) {

@@ -120,9 +120,7 @@ function updatePlayerRatings(data) {
         console.log("rejected: team has zero real players.");
         return;
     }
-    console.log(teamRatings);
     const updatedScores = rate(teamRatings, {score: deltaScores});
-    console.log(updatedScores);
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
             teamRatings[i][j].mu = updatedScores[i][j].mu;

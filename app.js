@@ -122,6 +122,9 @@ function updatePlayerRatings(data) {
     for (var i = 0; i < data.players.length; i++) {
         const pdata = data.players[i];
         if (pdata.team && !pdata.isBot) {
+            console.log(playerRatings[pdata.gamemode]);
+            console.log(pdata.name);
+            console.log(pdata.gamemode);
             var currentRating = playerRatings[pdata.gamemode][pdata.name];
             if (!currentRating) {
                 currentRating = playerRatings[pdata.gamemode][pdata.name] = computeInitialRating(pdata.xp);

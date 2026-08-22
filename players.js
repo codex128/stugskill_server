@@ -29,6 +29,7 @@ const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
             playerRatings[player[0]] = rating({mu: player[1], sigma: player[2]});
         }
         ratingsRead = true;
+        console.log("Player data successfully read from file: " + data.length + " records.");
     } catch (e) {
         console.error("Fatal: error while reading from player data. Copying to backup to avoid data being lost.", e);
         await fs.copyFile(playerDataFile, "/home/codex/projects/stugskill_server/player_backup_" + Date.now() + ".csv");
@@ -52,6 +53,7 @@ setInterval(async () => {
         await fs.writeFile(playerDataFile, output, "utf8");
         await release();
         ratingsUpdated = false;
+        console.log("Player updates successfully written to file.");
     } catch (e) {
         console.error("Failed to write player updates to file.");
     } finally {
@@ -98,10 +100,12 @@ function updatePlayerRatings(data) {
             teamRatings[i][j] = updatedScores[i][j];
         }
     }
+    console.log("Player ratings successfully updated.");
     ratingsUpdated = true;
 }
 
 const server = http.createServer((req, res) => {
+    console.log("http server started");
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ message: 'Hello from JavaScript!' }));
 });
@@ -110,6 +114,7 @@ const wss = new WebSocketServer({ noServer: true });
 server.on("upgrade", (request, socket, head) => {
     const path = request.url;
     if (path === "/ws/" || path === "/ws") {
+        console.log("WebSocket connection requested.");
         wss.handleUpgrade(request, socket, head, (ws) => {
             wss.emit("connection", ws, request);
         });
@@ -117,6 +122,7 @@ server.on("upgrade", (request, socket, head) => {
 });
 
 wss.on("connection", (ws, request) => {
+    console.log("WebSocket connection established.");
     ws.on("message", (message) => {
         try {
             updatePlayerRatings(JSON.parse(message));
@@ -127,5 +133,5 @@ wss.on("connection", (ws, request) => {
 });
 
 server.listen(3000, () => {
-    console.log('Server running at http://localhost:3000/');
+    console.log('Server running...');
 });

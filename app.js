@@ -18,7 +18,7 @@ var playerRatings = {};
 var ratingsUpdated = false;
 var ratingsRead = false;
 const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
-const cleaningInterval = 1000 * 60 * 60;   // hour
+const cleaningInterval = 1000 * 60 * 5;   // hour
 const staleGameThreshold = 1000 * 60 * 15; // 15 minutes
 
 (async function() {
@@ -123,7 +123,8 @@ function updatePlayerRatings(data) {
     const updatedScores = rate(teamRatings, {score: deltaScores});
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
-            teamRatings[i][j] = updatedScores[i][j];
+            teamRatings[i][j].mu = updatedScores[i][j].mu;
+            teamRatings[i][j].sigma = updatedScores[i][j].sigma;
         }
     }
     console.log("Player ratings successfully updated.");

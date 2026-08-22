@@ -34,7 +34,7 @@ const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
         console.error("Fatal: error while reading from player data. Copying to backup to avoid data being lost.", e);
         await fs.copyFile(playerDataFile, "/home/codex/projects/stugskill_server/player_backup_" + Date.now() + ".csv");
     } finally {
-        if (release) await release();
+        if (typeof release === "function") await release();
     }
 })();
 
@@ -57,7 +57,7 @@ setInterval(async () => {
     } catch (e) {
         console.error("Failed to write player updates to file.");
     } finally {
-        if (release) await release();
+        if (typeof release === "function") await release();
     }
 }, 1000 * 60 * 60); // every hour
 

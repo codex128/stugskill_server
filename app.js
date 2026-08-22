@@ -122,9 +122,11 @@ function updatePlayerRatings(data) {
         return;
     }
     var teamRatings = [[], []];
+    var playerCount = 0;
     for (var i = 0; i < data.players.length; i++) {
         const pdata = data.players[i];
         if (pdata.team && !pdata.isBot) {
+            playerCount++;
             var currentRating = playerRatings[data.gamemode][pdata.name];
             if (!currentRating) {
                 currentRating = playerRatings[data.gamemode][pdata.name] = computeInitialRating(pdata.xp);
@@ -133,7 +135,7 @@ function updatePlayerRatings(data) {
         }
     }
     if (teamRatings[0].length === 0 || teamRatings[1].length === 0) {
-        console.log("rejecting: lacking real players.");
+        console.log("rejecting: lacking real players (" + playerCount + ")");
         return;
     }
     // tau ensures players don't get locked down into a rating

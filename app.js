@@ -18,6 +18,8 @@ var playerRatings = {};
 var ratingsUpdated = false;
 var ratingsRead = false;
 const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
+const cleaningInterval = 1000 * 60 * 60;   // hour
+const staleGameThreshold = 1000 * 60 * 15; // 15 minutes
 
 (async function() {
     let release;
@@ -70,22 +72,29 @@ setInterval(async () => {
             console.log("Player file released.");
         }
     }
-}, 1000 * 60 * 60); // every hour
+    try {
+        const now = Date.now();
+        Object.keys(activeGameData).forEach(key => {
+            if (activeGameData[key].lastUpdate + staleGameThreshold < now) {
+                delete activeGameData[key];
+            }
+        });
+    } catch (e) {
+        console.error("Failed to clean game data:", e);
+    }
+}, cleaningInterval);
 
 function updatePlayerRatings(data) {
     if (!supportedGameModes[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
         return;
     }
-    var game = activeGameData[data.gameId];
+    var game = activeGameData[data.shareLinkToken];
     if (!game) {
-        activeGameData[data.gameId] = {
+        activeGameData[data.shareLinkToken] = {
             lastUpdate: Date.now(),
             scores: [data.teams[0].score, data.teams[1].score]
         };
         console.log("rejected: game not initialized");
-        return;
-    } else if (game.scores[0] >= data.teams[0].score && game.scores[1] >= data.teams[1].score) {
-        console.log("");
         return;
     }
     const deltaScores = [data.teams[0].score - game.scores[0], data.teams[1].score - game.scores[1]];
@@ -93,6 +102,7 @@ function updatePlayerRatings(data) {
     game.scores[1] = data.teams[1].score;
     game.lastUpdate = Date.now();
     if (deltaScores[0] <= 0 && deltaScores[1] <= 0) {
+        console.log("rejected: non-positive team scores");
         return;
     }
     var teamRatings = [[], []];
@@ -107,6 +117,7 @@ function updatePlayerRatings(data) {
         }
     }
     if (teamRatings[0].length === 0 || teamRatings[1].length === 0) {
+        console.log("rejected: team has zero real players.");
         return;
     }
     const updatedScores = rate(teamRatings, {score: deltaScores});
@@ -136,7 +147,8 @@ wss.on("connection", (ws, request) => {
     console.log("WebSocket connection established.");
     ws.on("message", (message) => {
         try {
-            //updatePlayerRatings(JSON.parse(message));
+            console.log("received websocket message");
+            updatePlayerRatings(JSON.parse(message));
         } catch (e) {
             console.error("Failed to compute player ratings: ", e);
         }

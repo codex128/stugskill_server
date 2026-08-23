@@ -16,7 +16,7 @@ function fetchPlayerData() {
     const search = mode + "," + name + "," + limit;
     const table = document.getElementById("player-table");
     table.replaceChildren();
-    fetch(`https://stugskill.online/api/players?search=${encodeURIComponent(search)}`, {
+    fetch(`/api/players?search=${encodeURIComponent(search)}`, {
         method: "GET",
         credentials: "include"}).then(res => res.json()).then(data => {
             table.appendChild(createTableRow("", "Player", "OS"));

@@ -159,7 +159,7 @@ const server = http.createServer((req, res) => {
         var results = [];
         for (var name in mode) {
             if (name.includes(searchTerms[1])) {
-                results.push({name: name, os: Math.floor(mode[name].mu)});
+                results.push({name: name, os: Math.floor(mode[name].mu - mode[name].sigma)});
             }
         }
         results.sort((a, b) => b.os - a.os);

@@ -4,9 +4,14 @@ console.log("hello from server!");
 
 const http = require('http');
 const { WebSocketServer } = require('ws');
-const { rating, rate } = require('openskill');
+const { rating, plackettLuce } = require('openskill');
 const fs = require('fs/promises');
 const lockfile = require('proper-lockfile');
+
+const rate = plackettLuce({
+    margin: 1.0,
+    limitSigma: false
+});
 
 const supportedGameModes = {
     "conquest": true,
@@ -142,7 +147,7 @@ function updatePlayerRatings(data) {
         return;
     }
     // tau ensures players don't get locked down into a rating
-    const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.1});
+    const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.3});
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
             teamRatings[i][j].mu = updatedScores[i][j].mu;

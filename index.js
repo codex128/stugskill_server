@@ -18,8 +18,7 @@ function fetchPlayerData() {
     table.replaceChildren();
     fetch(`https://stugskill.online/api/players?search=${encodeURIComponent(search)}`, {
         method: "GET",
-        credentials: "include",
-        origin: "https://www.stugskill.online"}).then(res => res.json()).then(data => {
+        credentials: "include"}).then(res => res.json()).then(data => {
             table.appendChild(createTableRow("", "Player", "OS"));
             for (var i = 0; i < data.players.length; i++) {
                 table.appendChild(createTableRow(i + 1, data.players[i].name, data.players[i].os));

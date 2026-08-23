@@ -96,7 +96,7 @@ setInterval(async () => {
 
 function computeInitialRating(xp) {
     const rank = 0.035 * Math.sqrt(xp);
-    return {mu: 25 + rank * (42 / 400), sigma: 8.3333 - rank * (5.3333 / 400)};
+    return {mu: 25 + rank * (17 / 400), sigma: 8.3333 - rank * (5.3333 / 400)};
 }
 
 function updatePlayerRatings(data) {

@@ -22,7 +22,7 @@ body{
   font-family:'Recursive', sans-serif;
   font-variation-settings:'MONO' 0, 'CASL' 0.15, 'wght' 550, 'slnt' 0;
   color:var(--text);
-  background:
+  background-image:
     radial-gradient(ellipse at 50% -10%, #4a3324 0%, transparent 55%),
     radial-gradient(ellipse at 90% 100%, #33231a 0%, transparent 50%),
     linear-gradient(160deg, var(--bg-mid), var(--bg-deep) 70%);
@@ -46,7 +46,7 @@ body{
   transform:skew(-4deg);
   margin:0 0 10px;
 }
-.logo span{color:var(--gold); -webkit-text-stroke:1.5px #4a2e04;}
+.logo span{color:var(--gold); -webkit-text-stroke:1.5px black;}
 .intro{
   font-size:14.5px;
   line-height:1.5;

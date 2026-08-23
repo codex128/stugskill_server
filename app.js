@@ -147,7 +147,7 @@ function updatePlayerRatings(data) {
         return;
     }
     // tau ensures players don't get locked down into a rating
-    const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.3});
+    const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.25});
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
             teamRatings[i][j].mu = updatedScores[i][j].mu;

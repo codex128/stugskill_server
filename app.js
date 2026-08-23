@@ -17,6 +17,7 @@ var activeGameData = {};
 var playerRatings = {
     conquest: {},
     battle: {},
+    "1v1": {}
 };
 var ratingsUpdated = false;
 var ratingsRead = false;
@@ -100,7 +101,9 @@ function computeInitialRating(xp) {
 }
 
 function updatePlayerRatings(data) {
-    if (!playerRatings[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
+    if (data.gamemode === "battle" && data.teams[0].players === 1 && data.teams[1].players === 1) {
+        data.gamemode = "1v1";
+    } else if (!playerRatings[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
         console.log("rejecting: unsupported game mode or lacking players.");
         return;
     }
@@ -159,7 +162,7 @@ const server = http.createServer((req, res) => {
         var results = [];
         for (var name in mode) {
             if (name.includes(searchTerms[1])) {
-                results.push({name: name, os: Math.floor(mode[name].mu - mode[name].sigma)});
+                results.push({name: name, os: Math.floor((mode[name].mu - mode[name].sigma) * 10) / 10});
             }
         }
         results.sort((a, b) => b.os - a.os);

@@ -16,12 +16,15 @@ function fetchPlayerData() {
     const search = mode + "," + name + "," + limit;
     const table = document.getElementById("player-table");
     table.replaceChildren();
-    fetch(`https://stugskill.online/api/players?search=${encodeURIComponent(search)}`, {method: "GET", credentials: "include"}).then(res => res.json()).then(data => {
-        table.appendChild(createTableRow("", "Player", "OS"));
-        for (var i = 0; i < data.players.length; i++) {
-            table.appendChild(createTableRow(i + 1, data.players[i].name, data.players[i].os));
-        }
-    });
+    fetch(`https://stugskill.online/api/players?search=${encodeURIComponent(search)}`, {
+        method: "GET",
+        credentials: "include",
+        origin: "https://www.stugskill.online"}).then(res => res.json()).then(data => {
+            table.appendChild(createTableRow("", "Player", "OS"));
+            for (var i = 0; i < data.players.length; i++) {
+                table.appendChild(createTableRow(i + 1, data.players[i].name, data.players[i].os));
+            }
+        });
 }
 
 document.getElementById("fetch-players").onclick = fetchPlayerData;

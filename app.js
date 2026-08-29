@@ -142,7 +142,7 @@ function updatePlayerRatings(data) {
         return;
     }
     // tau ensures players don't get locked down into a rating
-    const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.1, margin: 1.0});
+    const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.083333, margin: 0.75});
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
             teamRatings[i][j].mu = updatedScores[i][j].mu;
@@ -157,11 +157,12 @@ const server = http.createServer((req, res) => {
     res.setHeader("Content-Type", "application/json");
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (req.method === "GET" && url.pathname === "/api/players") {
-        const searchTerms = url.searchParams.get("search").split(",");
+        var searchTerms = url.searchParams.get("search").split(",");
+        searchTerms[1] = searchTerms[1].toLowerCase();
         const mode = playerRatings[searchTerms[0]];
         var results = [];
         for (var name in mode) {
-            if (name.includes(searchTerms[1])) {
+            if (name.toLowerCase().includes(searchTerms[1])) {
                 results.push({name: name, os: Math.floor((mode[name].mu - mode[name].sigma) * 10) / 10});
             }
         }

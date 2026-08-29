@@ -73,7 +73,7 @@ setInterval(async () => {
         for (var mode in playerRatings) {
             for (var name in playerRatings[mode]) {
                 const data = playerRatings[mode][name];
-                output += mode + "," + name + "," + data.mu + "," + data.sigma "," + data.lastSeen + "\n";
+                output += mode + "," + name + "," + data.mu + "," + data.sigma + "," + data.lastSeen + "\n";
                 records++;
             }
         }

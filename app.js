@@ -4,7 +4,7 @@ console.log("hello from server!");
 
 const http = require('http');
 const { WebSocketServer } = require('ws');
-const { rating, rate } = require('openskill');
+const { rating, rate, ordinal } = require('openskill');
 const fs = require('fs/promises');
 const lockfile = require('proper-lockfile');
 
@@ -163,7 +163,7 @@ const server = http.createServer((req, res) => {
         var results = [];
         for (var name in mode) {
             if (name.toLowerCase().includes(searchTerms[1])) {
-                results.push({name: name, os: Math.floor((mode[name].mu - mode[name].sigma) * 10) / 10});
+                results.push({name: name, os: Math.floor(ordinal(mode[name]) * 10) / 10});
             }
         }
         results.sort((a, b) => b.os - a.os);

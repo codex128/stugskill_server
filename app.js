@@ -24,6 +24,7 @@ var ratingsRead = false;
 const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
 const cleaningInterval = 1000 * 60 * 15;   // 15 minutes
 const staleGameThreshold = 1000 * 60 * 15; // 15 minutes
+const playerSkillDecay = [1000 * 60 * 60 * 24 * 3, 1000 * 60 * 60 * 24 * 30]; // 3 days, 30 days
 
 (async function() {
     let release;
@@ -37,7 +38,11 @@ const staleGameThreshold = 1000 * 60 * 15; // 15 minutes
             if (player.length >= 4) {
                 var mode = playerRatings[player[0]];
                 if (mode) {
-                    mode[player[1]] = rating({mu: parseFloat(player[2]), sigma: parseFloat(player[3])});
+                    mode[player[1]] = rating({
+                        mu: parseFloat(player[2]),
+                        sigma: parseFloat(player[3]),
+                        lastSeen: (players.length >= 5 ? parseInt(players[4]) : Date.now())
+                    });
                     records++;
                 } else {
                     console.warn("Player data references unsupported game mode: " + data[i]);
@@ -68,7 +73,7 @@ setInterval(async () => {
         for (var mode in playerRatings) {
             for (var name in playerRatings[mode]) {
                 const data = playerRatings[mode][name];
-                output += mode + "," + name + "," + data.mu + "," + data.sigma + "\n";
+                output += mode + "," + name + "," + data.mu + "," + data.sigma "," + data.lastSeen + "\n";
                 records++;
             }
         }
@@ -98,6 +103,13 @@ setInterval(async () => {
 function computeInitialRating(xp) {
     const rank = 0.035 * Math.sqrt(xp);
     return {mu: 25 + rank * (17 / 400), sigma: 8.3333 - rank * (5.3333 / 400)};
+}
+
+function mapRange(value, inMin, inMax, outMin, outMax) {
+    if (inMin >= inMax) {
+        return outMax;
+    }
+    return Math.min(Math.max((value - inMin) / (inMax - inMin), 0), 1) * (outMax - outMin) + outMin;
 }
 
 function updatePlayerRatings(data) {
@@ -134,6 +146,11 @@ function updatePlayerRatings(data) {
             if (!currentRating) {
                 currentRating = playerRatings[data.gamemode][pdata.name] = computeInitialRating(pdata.xp);
             }
+            const timeSinceLastSeen = game.lastUpdate - currentRating.lastSeen;
+            if (timeSinceLastSeen > playerSkillDecay[0]) {
+                currentRating.sigma = mapRange(timeSinceLastSeen, playerSkillDecay[0], playerSkillDecay[1], currentRating.sigma, 8.3333);
+            }
+            currentRating.lastSeen = game.lastUpdate;
             teamRatings[pdata.team].push(currentRating);
         }
     }

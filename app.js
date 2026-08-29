@@ -41,7 +41,7 @@ const playerSkillDecay = [1000 * 60 * 60 * 24 * 3, 1000 * 60 * 60 * 24 * 30]; //
                     mode[player[1]] = {
                         mu: parseFloat(player[2]),
                         sigma: parseFloat(player[3]),
-                        lastSeen: (players.length >= 5 ? parseInt(players[4]) : Date.now())
+                        lastSeen: (player.length >= 5 ? parseInt(player[4]) : Date.now())
                     };
                     records++;
                 } else {

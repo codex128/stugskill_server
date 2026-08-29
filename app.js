@@ -38,11 +38,11 @@ const playerSkillDecay = [1000 * 60 * 60 * 24 * 3, 1000 * 60 * 60 * 24 * 30]; //
             if (player.length >= 4) {
                 var mode = playerRatings[player[0]];
                 if (mode) {
-                    mode[player[1]] = rating({
+                    mode[player[1]] = {
                         mu: parseFloat(player[2]),
                         sigma: parseFloat(player[3]),
                         lastSeen: (players.length >= 5 ? parseInt(players[4]) : Date.now())
-                    });
+                    };
                     records++;
                 } else {
                     console.warn("Player data references unsupported game mode: " + data[i]);

@@ -28,7 +28,7 @@ function fetchPlayerData() {
                     data.players[i].os /*+ " \u00B1" + data.players[i].uncertainty*/
                 ));
             }
-            document.getElementById("active-games").textContent = data.games + " active games.";
+            document.getElementById("active-games").textContent = data.games + " games in progress";
         });
 }
 

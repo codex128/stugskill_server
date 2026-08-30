@@ -24,7 +24,7 @@ function fetchPlayerData() {
                 table.appendChild(createTableRow(
                     i + 1,
                     data.players[i].name,
-                    data.players[i].os + " \u00B1" + data.players[i].uncertainty
+                    data.players[i].os /*+ " \u00B1" + data.players[i].uncertainty*/
                 ));
             }
         });

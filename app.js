@@ -127,7 +127,7 @@ function updatePlayerRatings(data) {
             scores: [data.teams[0].score, data.teams[1].score],
             players: {}
         }
-        for (var i = 0; i < data.players.length) {
+        for (var i = 0; i < data.players.length; i++) {
             const pdata = data.players[i];
             if (pdata.team !== null && !pdata.isBot) {
                 game.players[pdata.name] = game.lastUpdate;

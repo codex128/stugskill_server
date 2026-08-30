@@ -115,7 +115,7 @@ function computeInitialRating(xp) {
 
 function updatePlayerRatings(data) {
     if (data.gamemode === "battle" && data.teams[0].players === 1 && data.teams[1].players === 1) {
-        data.gamemode = "1v1
+        data.gamemode = "1v1";
     } else if (!playerRatings[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
         console.log("rejecting: unsupported game mode or lacking players.");
         return;

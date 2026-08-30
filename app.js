@@ -115,16 +115,23 @@ function computeInitialRating(xp) {
 
 function updatePlayerRatings(data) {
     if (data.gamemode === "battle" && data.teams[0].players === 1 && data.teams[1].players === 1) {
-        data.gamemode = "1v1";
+        data.gamemode = "1v1
     } else if (!playerRatings[data.gamemode] || data.teams[0].players <= 0 || data.teams[1].players <= 0) {
         console.log("rejecting: unsupported game mode or lacking players.");
         return;
     }
     var game = activeGameData[data.shareLinkToken];
     if (!game) {
-        activeGameData[data.shareLinkToken] = {
+        game = activeGameData[data.shareLinkToken] = {
             lastUpdate: Date.now(),
-            scores: [data.teams[0].score, data.teams[1].score]
+            scores: [data.teams[0].score, data.teams[1].score],
+            players: {}
+        }
+        for (var i = 0; i < data.players.length) {
+            const pdata = data.players[i];
+            if (pdata.team !== null && !pdata.isBot) {
+                game.players[pdata.name] = game.lastUpdate;
+            }
         }
         console.log("rejecting: must initialize game.");
         return;
@@ -142,6 +149,7 @@ function updatePlayerRatings(data) {
     for (var i = 0; i < data.players.length; i++) {
         const pdata = data.players[i];
         if (pdata.team !== null && !pdata.isBot) {
+            game.players[pdata.name] = game.lastUpdate;
             playerCount++;
             var currentRating = playerRatings[data.gamemode][pdata.name];
             if (!currentRating) {
@@ -163,8 +171,10 @@ function updatePlayerRatings(data) {
     const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.083333, margin: 0.75});
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
-            teamRatings[i][j].mu = updatedScores[i][j].mu;
-            teamRatings[i][j].sigma = updatedScores[i][j].sigma;
+            const pdata = teamRatings[i][j];
+            const updated = updatedScores[i][j];
+            pdata.mu = updated.mu;
+            pdata.sigma = updated.sigma;
         }
     }
     console.log("Player ratings successfully updated.");
@@ -179,8 +189,11 @@ const server = http.createServer((req, res) => {
         searchTerms[1] = searchTerms[1].toLowerCase();
         const mode = playerRatings[searchTerms[0]];
         var results = [];
+        const game = searchTerms[2].length > 0 ? activeGameData[searchTerms[2]] : undefined;
         for (var name in mode) {
-            if (mode[name].sigma <= playerRankedUncertainty && name.toLowerCase().includes(searchTerms[1])) {
+            if (mode[name].sigma <= playerRankedUncertainty
+                    && name.toLowerCase().includes(searchTerms[1])
+                    && (!game || game.players[name] === game.lastUpdate)) {
                 results.push({
                     name: name,
                     os: Math.floor(ordinal(mode[name]) * 10) / 10,
@@ -189,12 +202,12 @@ const server = http.createServer((req, res) => {
             }
         }
         results.sort((a, b) => b.os - a.os);
-        const limit = parseInt(searchTerms[2]);
+        const limit = parseInt(searchTerms[3]);
         if (limit > 0) {
             results = results.slice(0, limit);
         }
         res.writeHead(200);
-        res.end(JSON.stringify({players: results}));
+        res.end(JSON.stringify({players: results, games: Object.keys(activeGameData).length}));
     }
 });
 const wss = new WebSocketServer({ noServer: true });

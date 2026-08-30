@@ -12,8 +12,9 @@ function createTableRow() {
 function fetchPlayerData() {
     const mode = document.getElementById("mode-filter").value;
     const name = document.getElementById("name-filter").value;
+    const lobby = document.getElementById("lobby-filter").value;
     const limit = document.getElementById("max-players").value;
-    const search = mode + "," + name + "," + limit;
+    const search = mode + "," + name + "," + lobby + "," + limit;
     const table = document.getElementById("player-table");
     table.replaceChildren();
     fetch(`/api/players?search=${encodeURIComponent(search)}`, {

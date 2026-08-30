@@ -17,8 +17,8 @@
                 <option value="battle">Battle</option>
                 <option value="1v1">1v1</option>
             </select>
-            <input id="name-filter" type="text" value="" placeholder="filter by name">
-            <input id="lobby-filter" type="text" value="" placeholder="filter by lobby">
+            <input id="name-filter" class="filter-text-input" type="text" value="" placeholder="filter by name">
+            <input id="lobby-filter" class="filter-text-input" type="text" value="" placeholder="filter by lobby">
             <select id="max-players">
                 <option value="50">Top 50</option>
                 <option value="100">Top 100</option>
@@ -27,6 +27,7 @@
             </select>
             <button id="fetch-players">Fetch</button>
         </div>
+        <span id="active-games"></span>
         <div class="board">
             <table id="player-table"></table>
         </div>

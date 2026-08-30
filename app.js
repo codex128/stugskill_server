@@ -25,6 +25,7 @@ const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
 const cleaningInterval = 1000 * 60 * 15;   // 15 minutes
 const staleGameThreshold = 1000 * 60 * 15; // 15 minutes
 const playerSkillDecay = [1000 * 60 * 60 * 24 * 3, 1000 * 60 * 60 * 24 * 30]; // 3 days, 30 days
+const playerRankedUncertainty = 4.0;
 
 (async function() {
     let release;
@@ -100,16 +101,16 @@ setInterval(async () => {
     }
 }, cleaningInterval);
 
-function computeInitialRating(xp) {
-    const rank = 0.035 * Math.sqrt(xp);
-    return {mu: 25 + rank * (17 / 400), sigma: 8.3333 - rank * (5.3333 / 400)};
-}
-
 function mapRange(value, inMin, inMax, outMin, outMax) {
     if (inMin >= inMax) {
         return outMax;
     }
     return Math.min(Math.max((value - inMin) / (inMax - inMin), 0), 1) * (outMax - outMin) + outMin;
+}
+
+function computeInitialRating(xp) {
+    const rank = 0.035 * Math.sqrt(xp);
+    return {mu: 25 + mapRange(rank, 0, 400, 0, 17), sigma: 8.3333 - mapRange(rank, 0, 400, 0, 5.3333)};
 }
 
 function updatePlayerRatings(data) {
@@ -179,7 +180,7 @@ const server = http.createServer((req, res) => {
         const mode = playerRatings[searchTerms[0]];
         var results = [];
         for (var name in mode) {
-            if (name.toLowerCase().includes(searchTerms[1])) {
+            if (mode[name].sigma <= playerRankedUncertainty && name.toLowerCase().includes(searchTerms[1])) {
                 results.push({
                     name: name,
                     os: Math.floor(ordinal(mode[name]) * 10) / 10,

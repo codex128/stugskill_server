@@ -180,7 +180,11 @@ const server = http.createServer((req, res) => {
         var results = [];
         for (var name in mode) {
             if (name.toLowerCase().includes(searchTerms[1])) {
-                results.push({name: name, os: Math.floor(ordinal(mode[name]) * 10) / 10});
+                results.push({
+                    name: name,
+                    os: Math.floor(ordinal(mode[name]) * 10) / 10,
+                    uncertainty: floor(mode[name].sigma * 10) / 10
+                });
             }
         }
         results.sort((a, b) => b.os - a.os);

@@ -21,7 +21,11 @@ function fetchPlayerData() {
         credentials: "include"}).then(res => res.json()).then(data => {
             table.appendChild(createTableRow("", "Player", "OS"));
             for (var i = 0; i < data.players.length; i++) {
-                table.appendChild(createTableRow(i + 1, data.players[i].name, data.players[i].os));
+                table.appendChild(createTableRow(
+                    i + 1,
+                    data.players[i].name,
+                    data.players[i].os + " \u00B1" + data.players[i].uncertainty
+                ));
             }
         });
 }

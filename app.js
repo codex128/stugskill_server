@@ -183,7 +183,7 @@ const server = http.createServer((req, res) => {
                 results.push({
                     name: name,
                     os: Math.floor(ordinal(mode[name]) * 10) / 10,
-                    uncertainty: floor(mode[name].sigma * 10) / 10
+                    uncertainty: Math.floor(mode[name].sigma * 10) / 10
                 });
             }
         }

@@ -107,7 +107,7 @@ setInterval(async () => {
 }, cleaningInterval);
 
 function mapRange(value, inMin, inMax, outMin, outMax) {
-    if (inMin >= inMax) {
+    if (inMin === inMax) {
         return outMax;
     }
     return Math.min(Math.max((value - inMin) / (inMax - inMin), 0), 1) * (outMax - outMin) + outMin;
@@ -150,11 +150,21 @@ function updatePlayerRatings(data) {
         return;
     }
     var teamRatings = [[], []];
+    var weights = [[], []];
     var playerCount = 0;
     for (var i = 0; i < data.players.length; i++) {
         const pdata = data.players[i];
         if (pdata.team !== null && !pdata.isBot) {
-            game.players[pdata.name] = game.lastUpdate;
+            var gamePlayerData = game.players[pdata.name];
+            if (!gamePlayerData) {
+                gamePlayerData = game.players[pdata.name] = {
+                    lastSeen: game.lastUpdate,
+                    joined: game.lastUpdate
+                };
+            } else {
+                gamePlayerData.lastSeen = game.lastUpdate;
+            }
+            const killsPerMinute = (pdata.kills * 60_000) / (game.lastUpdate - gamePlayerData.joined);
             playerCount++;
             var currentRating = playerRatings[data.gamemode][pdata.name];
             if (!currentRating) {
@@ -162,14 +172,14 @@ function updatePlayerRatings(data) {
             }
             currentRating.lastSeen = game.lastUpdate;
             teamRatings[pdata.team].push(currentRating);
+            weights[pdata.team].push(killsPerMinute);
         }
     }
     if (teamRatings[0].length === 0 || teamRatings[1].length === 0) {
         console.log("rejecting: lacking real players (" + playerCount + ")");
         return;
     }
-    // tau ensures players don't get locked down into a rating
-    const updatedScores = rate(teamRatings, {score: deltaScores, tau: 0.083333, margin: 0.75});
+    const updatedScores = rate(teamRatings, {score: deltaScores, weights: weights, tau: 0.083333, margin: 0.75});
     for (var i = 0; i < teamRatings.length; i++) {
         for (var j = 0; j < teamRatings[i].length; j++) {
             const pdata = teamRatings[i][j];
@@ -194,7 +204,7 @@ const server = http.createServer((req, res) => {
         for (var name in mode) {
             if (mode[name].sigma <= playerRankedUncertainty
                     && name.toLowerCase().includes(searchTerms[1])
-                    && (!game || game.players[name] === game.lastUpdate)) {
+                    && (!game || (game.players[name] && game.players[name].lastSeen === game.lastUpdate))) {
                 results.push({
                     name: name,
                     os: Math.floor(ordinal(mode[name]) * 10) / 10,

@@ -74,6 +74,11 @@ setInterval(async () => {
         for (var mode in playerRatings) {
             for (var name in playerRatings[mode]) {
                 const data = playerRatings[mode][name];
+                // apply time skill decay
+                const timeSinceLastSeen = now = data.lastSeen;
+                if (timeSinceLastSeen > playerSkillDecay[0]) {
+                    data.sigma = mapRange(timeSinceLastSeen, playerSkillDecay[0], playerSkillDecay[1], data.sigma, 8.3333);
+                }
                 output += mode + "," + name + "," + data.mu + "," + data.sigma + "," + data.lastSeen + "\n";
                 records++;
             }
@@ -154,10 +159,6 @@ function updatePlayerRatings(data) {
             var currentRating = playerRatings[data.gamemode][pdata.name];
             if (!currentRating) {
                 currentRating = playerRatings[data.gamemode][pdata.name] = computeInitialRating(pdata.xp);
-            }
-            const timeSinceLastSeen = game.lastUpdate - currentRating.lastSeen;
-            if (timeSinceLastSeen > playerSkillDecay[0]) {
-                currentRating.sigma = mapRange(timeSinceLastSeen, playerSkillDecay[0], playerSkillDecay[1], currentRating.sigma, 8.3333);
             }
             currentRating.lastSeen = game.lastUpdate;
             teamRatings[pdata.team].push(currentRating);

@@ -24,7 +24,7 @@ var ratingsRead = false;
 const playerDataFile = "/home/codex/projects/stugskill_server/players.csv";
 const cleaningInterval = 1000 * 60 * 15;   // 15 minutes
 const staleGameThreshold = 1000 * 60 * 15; // 15 minutes
-const playerSkillDecay = [1000 * 60 * 60 * 24 * 3, 1000 * 60 * 60 * 24 * 30]; // 3 days, 30 days
+const skillDecayThreshold = 1000 * 60 * 60 * 24 * 3; // 3 days
 const playerRankedUncertainty = 4.0;
 
 (async function() {
@@ -75,9 +75,9 @@ setInterval(async () => {
             for (var name in playerRatings[mode]) {
                 const data = playerRatings[mode][name];
                 // apply time skill decay
-                const timeSinceLastSeen = now = data.lastSeen;
-                if (timeSinceLastSeen > playerSkillDecay[0]) {
-                    data.sigma = mapRange(timeSinceLastSeen, playerSkillDecay[0], playerSkillDecay[1], data.sigma, 8.3333);
+                const timeSinceLastSeen = now - data.lastSeen;
+                if (timeSinceLastSeen > playerSkillDecay) {
+                    data.sigma = Math.min(8.3333, data.sigma + 0.004340276);
                 }
                 output += mode + "," + name + "," + data.mu + "," + data.sigma + "," + data.lastSeen + "\n";
                 records++;

@@ -204,7 +204,7 @@ const server = http.createServer((req, res) => {
         for (var name in mode) {
             if (mode[name].sigma <= playerRankedUncertainty
                     && name.toLowerCase().includes(searchTerms[1])
-                    && (!game || (game.players[name] && game.players[name].lastSeen === game.lastUpdate))) {
+                    && (!game || game.players[name])) {
                 results.push({
                     name: name,
                     os: Math.floor(ordinal(mode[name]) * 10) / 10,

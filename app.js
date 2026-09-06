@@ -76,7 +76,7 @@ setInterval(async () => {
                 const data = playerRatings[mode][name];
                 // apply time skill decay
                 const timeSinceLastSeen = now - data.lastSeen;
-                if (timeSinceLastSeen > playerSkillDecay) {
+                if (timeSinceLastSeen > skillDecayThreshold) {
                     data.sigma = Math.min(8.3333, data.sigma + 0.004340276);
                 }
                 output += mode + "," + name + "," + data.mu + "," + data.sigma + "," + data.lastSeen + "\n";
